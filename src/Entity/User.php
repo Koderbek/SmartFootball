@@ -10,6 +10,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Class User
@@ -22,18 +23,24 @@ class User
      * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="NONE")
+     *
+     * @Groups("show")
      */
     protected $id;
 
     /**
      * @var string
      * @ORM\Column(type="string")
+     *
+     * @Groups("show")
      */
     protected $name;
 
     /**
      * @var ArrayCollection|UserInterests[]
      * @ORM\OneToMany(targetEntity="UserInterests", mappedBy="user", cascade={"all"})
+     *
+     * @Groups("show")
      */
     protected $interests;
 

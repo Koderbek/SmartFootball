@@ -10,6 +10,7 @@ namespace App\Entity;
 
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Class UserInterests
@@ -24,6 +25,8 @@ class UserInterests
      * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
+     *
+     * @Groups("show")
      */
     protected $id;
 
@@ -36,6 +39,8 @@ class UserInterests
     /**
      * @var integer
      * @ORM\Column(type="integer")
+     *
+     * @Groups("show")
      */
     protected $team;
 
@@ -59,6 +64,14 @@ class UserInterests
     public function setId(int $id)
     {
         $this->id = $id;
+    }
+
+    /**
+     * @Groups("show")
+     */
+    public function getUserId()
+    {
+        return $this->getUser() ? $this->getUser()->getId() : null;
     }
 
     /**
@@ -109,4 +122,11 @@ class UserInterests
         $this->league = $league;
     }
 
+    /**
+     * @Groups("show")
+     */
+    public function getLeagueId()
+    {
+        return $this->getLeague() ? $this->getLeague()->getId() : null;
+    }
 }

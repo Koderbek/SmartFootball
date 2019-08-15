@@ -2,33 +2,34 @@
 /**
  * Created by PhpStorm.
  * User: Юрий
- * Date: 10.08.2019
- * Time: 22:52
+ * Date: 15.08.2019
+ * Time: 23:37
  */
 
 namespace App\Controller;
 
 
-use App\Entity\User;
+use App\Entity\UserInterests;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+
 /**
- * Class UserController
+ * Class UserInterestsController
  * @package App\Controller
  *
- * @Route("/user")
+ * @Route("/user-interests")
  */
-class UserController extends AbstractApiController
+class UserInterestsController extends AbstractApiController
 {
     /**
      * @Route("/", methods={"POST"})
      */
     public function new(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
     {
-        $entity = $serializer->deserialize($request->getContent(), User::class,'json');
+        $entity = $serializer->deserialize($request->getContent(), UserInterests::class,'json');
         $em->persist($entity);
         $em->flush();
 
@@ -39,9 +40,19 @@ class UserController extends AbstractApiController
     /**
      * @Route("/{id}", methods={"GET"})
      */
-    public function show(SerializerInterface $serializer, User $user)
+    public function show(SerializerInterface $serializer, UserInterests $interests)
     {
-        $json = $serializer->serialize($user, "json", ['groups' => ["show"]]);
+        $json = $serializer->serialize($interests, "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
+    }
+
+    /**
+     * @Route("/{id}", methods={"DELETE"})
+     */
+    public function delete(SerializerInterface $serializer, EntityManagerInterface $em, UserInterests $interests)
+    {
+        $em->remove($interests);
+        $em->flush();
+        return $this->createResponse("Ok");
     }
 }

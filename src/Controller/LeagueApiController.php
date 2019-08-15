@@ -31,4 +31,13 @@ class LeagueApiController extends AbstractApiController
         $json = $serializer->serialize($leagues, "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
     }
+
+    /**
+     * @Route("/{id}", methods={"GET"})
+     */
+    public function show(SerializerInterface $serializer, League $league)
+    {
+        $json = $serializer->serialize($league, "json", ['groups' => ["show"]]);
+        return $this->createResponse($json);
+    }
 }
