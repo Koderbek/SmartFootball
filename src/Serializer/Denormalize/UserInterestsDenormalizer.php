@@ -10,6 +10,7 @@ namespace App\Serializer\Denormalize;
 
 
 use App\Entity\League;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserInterests;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,16 +41,14 @@ class UserInterestsDenormalizer implements DenormalizerInterface
             $entity = new UserInterests();
         }
 
-        $entity->setTeam($data['team'] ?? $entity->getTeam());
-
         if (key_exists('user', $data)){
             $user = $this->em->getRepository(User::class)->find($data['user']);
             $entity->setUser($user);
         }
 
-        if (key_exists('league', $data)){
-            $league = $this->em->getRepository(League::class)->find($data['league']);
-            $entity->setLeague($league);
+        if (key_exists('team', $data)){
+            $team = $this->em->getRepository(Team::class)->find($data['team']);
+            $entity->setTeam($team);
         }
 
         return $entity;
@@ -59,5 +58,4 @@ class UserInterestsDenormalizer implements DenormalizerInterface
     {
         return new $type() instanceof UserInterests;
     }
-
 }

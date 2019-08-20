@@ -7,6 +7,7 @@
  */
 
 namespace App\Entity;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -43,6 +44,17 @@ class League
      * @Groups("show")
      */
     protected $country;
+
+    /**
+     * @var ArrayCollection|Team[]
+     * @ORM\OneToMany(targetEntity="Team", mappedBy="league")
+     */
+    protected $teams;
+
+    public function __construct()
+    {
+        $this->teams = new ArrayCollection();
+    }
 
     /**
      * @return int
@@ -90,5 +102,21 @@ class League
     public function setCountry(string $country)
     {
         $this->country = $country;
+    }
+
+    /**
+     * @return Team[]|ArrayCollection
+     */
+    public function getTeams()
+    {
+        return $this->teams;
+    }
+
+    /**
+     * @param Team[]|ArrayCollection $teams
+     */
+    public function setTeams($teams)
+    {
+        $this->teams = $teams;
     }
 }

@@ -25,10 +25,17 @@ use Symfony\Component\Serializer\SerializerInterface;
 class GameController extends AbstractApiController
 {
     /**
-     * @Route("/add")
+     * @Route("/add", methods={"POST"})
      */
     public function addGames(SerializerInterface $serializer, EntityManagerInterface $em)
     {
+        $matches = $em->getRepository(Game::class)->findAll();
+        if ($matches) {
+            foreach ($matches as $match) {
+                $em->remove($match);
+            }
+        }
+
         $httpClient = HttpClient::create();
         $response = $httpClient->request(
             'GET',

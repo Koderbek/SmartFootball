@@ -37,18 +37,10 @@ class UserInterests
     protected $user;
 
     /**
-     * @var integer
-     * @ORM\Column(type="integer")
-     *
-     * @Groups("show")
+     * @var Team|null
+     * @ORM\ManyToOne(targetEntity="Team")
      */
     protected $team;
-
-    /**
-     * @var League|null
-     * @ORM\ManyToOne(targetEntity="League")
-     */
-    protected $league;
 
     /**
      * @return int
@@ -91,7 +83,7 @@ class UserInterests
     }
 
     /**
-     * @return int
+     * @return Team|null
      */
     public function getTeam()
     {
@@ -99,34 +91,18 @@ class UserInterests
     }
 
     /**
-     * @param int $team
+     * @param Team|null $team
      */
-    public function setTeam(int $team)
+    public function setTeam(?Team $team)
     {
         $this->team = $team;
     }
 
     /**
-     * @return League|null
-     */
-    public function getLeague()
-    {
-        return $this->league;
-    }
-
-    /**
-     * @param League|null $league
-     */
-    public function setLeague(?League $league)
-    {
-        $this->league = $league;
-    }
-
-    /**
      * @Groups("show")
      */
-    public function getLeagueId()
+    public function getTeamId()
     {
-        return $this->getLeague() ? $this->getLeague()->getId() : null;
+        return $this->getTeam() ? $this->getTeam()->getId() : null;
     }
 }
