@@ -54,37 +54,41 @@ class LeagueApiController extends AbstractApiController
     }
 
     /**
-     * @Route("/teams/{id}", methods={"POST"})
+     * @Route("/teams", methods={"POST"})
      */
-    public function teamsCreate(SerializerInterface $serializer, EntityManagerInterface $em, League $league)
+    public function teamsCreate(SerializerInterface $serializer, EntityManagerInterface $em)
     {
-        $httpClient = HttpClient::create();
-        $response = $httpClient->request(
-            'GET',
-            'https://api-football-v1.p.rapidapi.com/v2/teams/league/'.$league->getId(),
-            [
-                'headers' => [
-                    'X-RapidAPI-Key' => '8ee277dd62mshed7303c40945b69p1b0bf1jsneee3b18794dd',
-                ],
-            ]
-        );
+        $leagues = $em->getRepository(League::class)->findAll();
+        foreach ($leagues as $league) {
+            $httpClient = HttpClient::create();
+            $response = $httpClient->request(
+                'GET',
+                'https://api-football-v1.p.rapidapi.com/v2/teams/league/'.$league->getId(),
+                [
+                    'headers' => [
+                        'X-RapidAPI-Key' => '8ee277dd62mshed7303c40945b69p1b0bf1jsneee3b18794dd',
+                    ],
+                ]
+            );
 
-        $data = json_decode($response->getContent(), true);
-        $api = $data['api'] ?? null;
-        $api ? $teams = $api['teams'] : $teams = null;
+            $data = json_decode($response->getContent(), true);
+            $api = $data['api'] ?? null;
+            $api ? $teams = $api['teams'] : $teams = null;
 
-        if ($teams){
-            foreach ($teams as $team){
-                $team['league_id'] = $league->getId();
-                $entity = $serializer->deserialize(json_encode($team), Team::class,'json');
-                if ($entity){
-                    $em->persist($entity);
+            if ($teams){
+                foreach ($teams as $team){
+                    $team['league_id'] = $league->getId();
+                    $entity = $serializer->deserialize(json_encode($team), Team::class,'json');
+                    if ($entity){
+                        $em->persist($entity);
+                    }
                 }
+                $em->flush();
             }
-            $em->flush();
         }
 
-        $entities = $em->getRepository(Team::class)->findByLeague($league);
+
+        $entities = $em->getRepository(Team::class)->findAll();
         $json = $serializer->serialize($entities, "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
     }
