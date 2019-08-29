@@ -36,7 +36,7 @@ class LeagueApiController extends AbstractApiController
     }
 
     /**
-     * @Route("/{id}", methods={"GET"})
+     * @Route("/{id}", methods={"GET"}, requirements={"id": "\d+"})
      */
     public function show(SerializerInterface $serializer, League $league)
     {
