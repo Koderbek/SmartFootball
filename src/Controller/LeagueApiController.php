@@ -45,7 +45,7 @@ class LeagueApiController extends AbstractApiController
     }
 
     /**
-     * @Route("/teams/{id}", methods={"GET"})
+     * @Route("/teams/{id}", methods={"GET"}, requirements={"id": "\d+"})
      */
     public function teamsShow(SerializerInterface $serializer, League $league)
     {
@@ -54,7 +54,7 @@ class LeagueApiController extends AbstractApiController
     }
 
     /**
-     * @Route("/teams/add", methods={"GET"})
+     * @Route("/teams/add", methods={"POST"})
      */
     public function teamsCreate(SerializerInterface $serializer, EntityManagerInterface $em)
     {
