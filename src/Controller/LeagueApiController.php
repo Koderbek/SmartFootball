@@ -66,7 +66,7 @@ class LeagueApiController extends AbstractApiController
                 'https://api-football-v1.p.rapidapi.com/v2/teams/league/'.$league->getId(),
                 [
                     'headers' => [
-                        'X-RapidAPI-Key' => '8ee277dd62mshed7303c40945b69p1b0bf1jsneee3b18794dd',
+                        'X-RapidAPI-Key' => $this->getParameter('rapid_api_key'),
                     ],
                 ]
             );
