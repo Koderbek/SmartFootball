@@ -11,6 +11,7 @@ namespace App\Controller;
 
 use App\Entity\League;
 use App\Entity\Team;
+use App\Service\RapidApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -25,6 +26,16 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class LeagueApiController extends AbstractApiController
 {
+    /**
+     * @var RapidApiService $rapidApiService
+     */
+    private $rapidApiService;
+
+    public function __construct(RapidApiService $rapidApiService)
+    {
+        $this->rapidApiService = $rapidApiService;
+    }
+
     /**
      * @Route("/", methods={"GET"})
      */
@@ -45,7 +56,7 @@ class LeagueApiController extends AbstractApiController
     }
 
     /**
-     * @Route("/teams/{id}", methods={"GET"}, requirements={"id": "\d+"})
+     * @Route("/{id}/teams", methods={"GET"}, requirements={"id": "\d+"})
      */
     public function teamsShow(SerializerInterface $serializer, League $league)
     {
@@ -60,21 +71,7 @@ class LeagueApiController extends AbstractApiController
     {
         $leagues = $em->getRepository(League::class)->findAll();
         foreach ($leagues as $league) {
-            $httpClient = HttpClient::create();
-            $response = $httpClient->request(
-                'GET',
-                'https://api-football-v1.p.rapidapi.com/v2/teams/league/'.$league->getId(),
-                [
-                    'headers' => [
-                        'X-RapidAPI-Key' => $this->getParameter('rapid_api_key'),
-                    ],
-                ]
-            );
-
-            $data = json_decode($response->getContent(), true);
-            $api = $data['api'] ?? null;
-            $api ? $teams = $api['teams'] : $teams = null;
-
+            $teams = $response = $this->rapidApiService->leagueTeams($this->getParameter('rapid_api_key'), $league);
             if ($teams){
                 foreach ($teams as $team){
                     $team['league_id'] = $league->getId();
@@ -86,7 +83,6 @@ class LeagueApiController extends AbstractApiController
                 $em->flush();
             }
         }
-
 
         $entities = $em->getRepository(Team::class)->findAll();
         $json = $serializer->serialize($entities, "json", ['groups' => ["show"]]);

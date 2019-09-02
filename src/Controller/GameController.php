@@ -12,6 +12,7 @@ namespace App\Controller;
 use App\Entity\Game;
 use App\Entity\UserInterests;
 use App\Service\MessageService;
+use App\Service\RapidApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,15 +32,21 @@ class GameController extends AbstractApiController
      */
     protected $messageService;
 
-    public function __construct(MessageService $messageService)
+    /**
+     * @var RapidApiService $rapidApiService
+     */
+    private $rapidApiService;
+
+    public function __construct(MessageService $messageService, RapidApiService $rapidApiService)
     {
         $this->messageService = $messageService;
+        $this->rapidApiService = $rapidApiService;
     }
 
     /**
      * @Route("/add", methods={"POST"})
      */
-    public function addGames(SerializerInterface $serializer, EntityManagerInterface $em)
+    public function addGames(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
     {
         $matches = $em->getRepository(Game::class)->findAll();
         if ($matches) {
@@ -48,21 +55,8 @@ class GameController extends AbstractApiController
             }
         }
 
-        $httpClient = HttpClient::create();
-        $response = $httpClient->request(
-            'GET',
-            'https://api-football-v1.p.rapidapi.com/v2/fixtures/date/'.date('Y-m-d'),
-            [
-                'headers' => [
-                    'X-RapidAPI-Key' => $this->getParameter('rapid_api_key'),
-                ],
-            ]
-        );
-
-        $data = json_decode($response->getContent(), true);
-        $api = $data['api'] ?? null;
-        $api ? $games = $api['fixtures'] : $games = null;
-
+        $date = $request->query->get('date');
+        $games = $this->rapidApiService->todayGames($this->getParameter('rapid_api_key'), $date);
         if ($games){
             foreach ($games as $game){
                 $entity = $serializer->deserialize(json_encode($game), Game::class,'json');
@@ -81,26 +75,13 @@ class GameController extends AbstractApiController
     /**
      * @Route("/fetch", methods={"GET"})
      */
-    public function fetchGames(SerializerInterface $serializer, EntityManagerInterface $em)
+    public function fetchGames(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
     {
         $alerts = [];
         $matches = $em->getRepository(Game::class)->findAll();
         if ($matches) {
-            $httpClient = HttpClient::create();
-            $response = $httpClient->request(
-                'GET',
-                'https://api-football-v1.p.rapidapi.com/v2/fixtures/date/2019-08-28'.date('Y-m-d'),
-                [
-                    'headers' => [
-                        'X-RapidAPI-Key' => $this->getParameter('rapid_api_key'),
-                    ],
-                ]
-            );
-
-            $data = json_decode($response->getContent(), true);
-            $api = $data['api'] ?? null;
-            $api ? $games = $api['fixtures'] : $games = null;
-
+            $date = $request->query->get('date');
+            $games = $this->rapidApiService->todayGames($this->getParameter('rapid_api_key'), $date);
             if ($games){
                 foreach ($matches as $match) {
                     foreach ($games as $game){
@@ -112,25 +93,27 @@ class GameController extends AbstractApiController
                                 $notifyUsers = $em->getRepository(UserInterests::class)
                                     ->findByTeam([$homeTeam['team_id'], $awayTeam['team_id']]);
 
-                                $userIds = [];
+                                if ($notifyUsers) {
+                                    $userIds = [];
 
-                                foreach ($notifyUsers as $notifyUser) {
-                                    $userIds[] = $notifyUser->getUserId();
+                                    foreach ($notifyUsers as $notifyUser) {
+                                        $userIds[] = $notifyUser->getUserId();
+                                    }
+
+                                    $message = $this->messageService->getMessage($game);
+
+                                    $userIds = array_unique($userIds);
+                                    sort($userIds);
+
+                                    $alerts[] = [
+                                        'message' => $message,
+                                        'users' => $userIds
+                                    ];
+
+                                    $em->remove($match);
+                                    break;
                                 }
-
-                                $message = $this->messageService->getMessage($game);
-
-                                $userIds = array_unique($userIds);
-                                sort($userIds);
-
-                                $alerts[] = [
-                                    'message' => $message,
-                                    'users' => $userIds
-                                ];
                             }
-
-                            $em->remove($match);
-                            break;
                         }
                     }
                 }
