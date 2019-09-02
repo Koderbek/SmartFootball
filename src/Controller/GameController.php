@@ -44,6 +44,16 @@ class GameController extends AbstractApiController
     }
 
     /**
+     * @Route("/", methods={"GET"})
+     */
+    public function index(SerializerInterface $serializer, EntityManagerInterface $em)
+    {
+        $leagues = $em->getRepository(Game::class)->findAll();
+        $json = $serializer->serialize($leagues, "json", ['groups' => ["show"]]);
+        return $this->createResponse($json);
+    }
+
+    /**
      * @Route("/add", methods={"POST"})
      */
     public function addGames(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
