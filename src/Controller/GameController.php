@@ -63,6 +63,7 @@ class GameController extends AbstractApiController
             foreach ($matches as $match) {
                 $em->remove($match);
             }
+            $em->flush();
         }
 
         $date = $request->query->get('date');
