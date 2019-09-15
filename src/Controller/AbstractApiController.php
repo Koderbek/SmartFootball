@@ -8,11 +8,15 @@
 namespace App\Controller;
 
 
+use App\Helper\SecurityInterface;
+use App\Helper\SecurityTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 
-class AbstractApiController extends Controller
+class AbstractApiController extends Controller implements SecurityInterface
 {
+    use SecurityTrait;
+
     protected function createResponse($data, $code = 200, $headers = [])
     {
         if (!is_null($this->getUser())) {

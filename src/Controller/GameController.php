@@ -14,7 +14,6 @@ use App\Entity\UserInterests;
 use App\Service\MessageService;
 use App\Service\RapidApiService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -46,10 +45,12 @@ class GameController extends AbstractApiController
     /**
      * @Route("/", methods={"GET"})
      */
-    public function index(SerializerInterface $serializer, EntityManagerInterface $em)
+    public function index(Request $request, SerializerInterface $serializer, EntityManagerInterface $em)
     {
-        $leagues = $em->getRepository(Game::class)->findAll();
-        $json = $serializer->serialize($leagues, "json", ['groups' => ["show"]]);
+        $this->checkToken($request, $this->getParameter('api_key'));
+
+        $games = $em->getRepository(Game::class)->findAll();
+        $json = $serializer->serialize($games, "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
     }
 
@@ -58,6 +59,8 @@ class GameController extends AbstractApiController
      */
     public function addGames(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $matches = $em->getRepository(Game::class)->findAll();
         if ($matches) {
             foreach ($matches as $match) {
@@ -88,6 +91,8 @@ class GameController extends AbstractApiController
      */
     public function fetchGames(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $alerts = [];
         $matches = $em->getRepository(Game::class)->findAll();
         if ($matches) {

@@ -29,6 +29,8 @@ class UserInterestsController extends AbstractApiController
      */
     public function new(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $entity = $serializer->deserialize($request->getContent(), UserInterests::class,'json');
         $em->persist($entity);
         $em->flush();
@@ -40,8 +42,10 @@ class UserInterestsController extends AbstractApiController
     /**
      * @Route("/{id}", methods={"GET"})
      */
-    public function show(SerializerInterface $serializer, UserInterests $interests)
+    public function show(Request $request, SerializerInterface $serializer, UserInterests $interests)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $json = $serializer->serialize($interests, "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
     }
@@ -49,8 +53,10 @@ class UserInterestsController extends AbstractApiController
     /**
      * @Route("/{id}", methods={"DELETE"})
      */
-    public function delete(SerializerInterface $serializer, EntityManagerInterface $em, UserInterests $interests)
+    public function delete(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserInterests $interests)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $em->remove($interests);
         $em->flush();
         return $this->createResponse("Ok");

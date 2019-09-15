@@ -14,6 +14,7 @@ use App\Entity\Team;
 use App\Service\RapidApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -39,8 +40,10 @@ class LeagueApiController extends AbstractApiController
     /**
      * @Route("/", methods={"GET"})
      */
-    public function index(SerializerInterface $serializer, EntityManagerInterface $em)
+    public function index(Request $request, SerializerInterface $serializer, EntityManagerInterface $em)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $leagues = $em->getRepository(League::class)->findAll();
         $json = $serializer->serialize($leagues, "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
@@ -49,8 +52,10 @@ class LeagueApiController extends AbstractApiController
     /**
      * @Route("/{id}", methods={"GET"}, requirements={"id": "\d+"})
      */
-    public function show(SerializerInterface $serializer, League $league)
+    public function show(Request $request, SerializerInterface $serializer, League $league)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $json = $serializer->serialize($league, "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
     }
@@ -58,8 +63,10 @@ class LeagueApiController extends AbstractApiController
     /**
      * @Route("/{id}/teams", methods={"GET"}, requirements={"id": "\d+"})
      */
-    public function teamsShow(SerializerInterface $serializer, League $league)
+    public function teamsShow(Request $request, SerializerInterface $serializer, League $league)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $json = $serializer->serialize($league->getTeams(), "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
     }
@@ -67,8 +74,10 @@ class LeagueApiController extends AbstractApiController
     /**
      * @Route("/teams/add", methods={"POST"})
      */
-    public function teamsCreate(SerializerInterface $serializer, EntityManagerInterface $em)
+    public function teamsCreate(Request $request, SerializerInterface $serializer, EntityManagerInterface $em)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $leagues = $em->getRepository(League::class)->findAll();
         foreach ($leagues as $league) {
             $teams = $response = $this->rapidApiService->leagueTeams($this->getParameter('rapid_api_key'), $league);

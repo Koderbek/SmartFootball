@@ -28,6 +28,8 @@ class UserController extends AbstractApiController
      */
     public function new(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $entity = $serializer->deserialize($request->getContent(), User::class,'json');
         $em->persist($entity);
         $em->flush();
@@ -39,9 +41,23 @@ class UserController extends AbstractApiController
     /**
      * @Route("/{id}", methods={"GET"})
      */
-    public function show(SerializerInterface $serializer, User $user)
+    public function show(Request $request, SerializerInterface $serializer, User $user)
     {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
         $json = $serializer->serialize($user, "json", ['groups' => ["show"]]);
+        return $this->createResponse($json);
+    }
+
+    /**
+     * @Route("/", methods={"GET"})
+     */
+    public function index(Request $request, SerializerInterface $serializer, EntityManagerInterface $em)
+    {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
+        $users = $em->getRepository(User::class)->findAll();
+        $json = $serializer->serialize($users, "json", ['groups' => ["show"]]);
         return $this->createResponse($json);
     }
 }
