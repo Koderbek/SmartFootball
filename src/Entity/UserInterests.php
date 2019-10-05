@@ -101,6 +101,14 @@ class UserInterests
     /**
      * @Groups("show")
      */
+    public function getTeamName()
+    {
+        return $this->getTeamId() ? $this->getTeam()->getName() : null;
+    }
+
+    /**
+     * @Groups("show")
+     */
     public function getTeamId()
     {
         return $this->getTeam() ? $this->getTeam()->getId() : null;
