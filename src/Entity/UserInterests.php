@@ -38,7 +38,7 @@ class UserInterests
 
     /**
      * @var Team|null
-     * @ORM\ManyToOne(targetEntity="Team")
+     * @ORM\ManyToOne(targetEntity="Team", inversedBy="interests")
      */
     protected $team;
 
