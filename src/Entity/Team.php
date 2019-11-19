@@ -7,6 +7,7 @@
  */
 
 namespace App\Entity;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -41,6 +42,17 @@ class Team
      * @ORM\ManyToOne(targetEntity="League", inversedBy="teams")
      */
     protected $league;
+
+    /**
+     * @var ArrayCollection|UserInterests[]
+     * @ORM\OneToMany(targetEntity="UserInterests", mappedBy="team")
+     */
+    protected $interests;
+
+    public function __construct()
+    {
+        $this->interests = new ArrayCollection();
+    }
 
     /**
      * @return int
@@ -96,5 +108,21 @@ class Team
     public function getLeagueId()
     {
         return $this->getLeague() ? $this->getLeague()->getId() : null;
+    }
+
+    /**
+     * @return UserInterests[]|ArrayCollection
+     */
+    public function getInterests()
+    {
+        return $this->interests;
+    }
+
+    /**
+     * @param UserInterests[]|ArrayCollection $interests
+     */
+    public function setInterests($interests)
+    {
+        $this->interests = $interests;
     }
 }
