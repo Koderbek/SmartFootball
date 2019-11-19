@@ -9,6 +9,8 @@
 namespace App\Controller;
 
 
+use App\Entity\Team;
+use App\Entity\User;
 use App\Entity\UserInterests;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,13 +21,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * Class UserInterestsController
  * @package App\Controller
- *
- * @Route("/user-interests")
  */
 class UserInterestsController extends AbstractApiController
 {
     /**
-     * @Route("/", methods={"POST"})
+     * @Route("/user-interests/", methods={"POST"})
      */
     public function new(SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
     {
@@ -40,7 +40,7 @@ class UserInterestsController extends AbstractApiController
     }
 
     /**
-     * @Route("/{id}", methods={"GET"})
+     * @Route("/user-interests/{id}", methods={"GET"}, requirements={"id": "\d+"})
      */
     public function show(Request $request, SerializerInterface $serializer, UserInterests $interests)
     {
@@ -51,12 +51,21 @@ class UserInterestsController extends AbstractApiController
     }
 
     /**
-     * @Route("/{id}", methods={"DELETE"})
+     * @Route("user/{user}/interests/{team}", methods={"DELETE"})
      */
-    public function delete(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserInterests $interests)
+    public function delete(
+        User $user,
+        Team $team,
+        Request $request,
+        SerializerInterface $serializer,
+        EntityManagerInterface $em
+    )
     {
         $this->checkToken($request, $this->getParameter('api_key'));
 
+        $interests = $em
+            ->getRepository(UserInterests::class)
+            ->findOneBy(['user' => $user->getId(), 'team' => $team->getId()]);
         $em->remove($interests);
         $em->flush();
         return $this->createResponse("Ok");
