@@ -46,6 +46,14 @@ class League
     protected $country;
 
     /**
+     * @var string|null
+     * @ORM\Column(type="string", nullable=true)
+     *
+     * @Groups("show")
+     */
+    protected $logo;
+
+    /**
      * @var ArrayCollection|Team[]
      * @ORM\OneToMany(targetEntity="Team", mappedBy="league")
      */
@@ -102,6 +110,22 @@ class League
     public function setCountry(string $country)
     {
         $this->country = $country;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getLogo()
+    {
+        return $this->logo;
+    }
+
+    /**
+     * @param null|string $logo
+     */
+    public function setLogo(?string $logo)
+    {
+        $this->logo = $logo;
     }
 
     /**
