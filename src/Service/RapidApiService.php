@@ -56,4 +56,24 @@ class RapidApiService
 
         return $games;
     }
+
+    public function getLeagueById($rapidApiKey, int $id)
+    {
+        $httpClient = HttpClient::create();
+        $response = $httpClient->request(
+            'GET',
+            'https://api-football-v1.p.rapidapi.com/v2/leagues/league/'.$id,
+            [
+                'headers' => [
+                    'X-RapidAPI-Key' => $rapidApiKey,
+                ],
+            ]
+        );
+
+        $data = json_decode($response->getContent(), true);
+        $api = $data['api'] ?? null;
+        $leagues = $api ? $api['leagues'] : null;
+
+        return $leagues[0] ?? null;
+    }
 }
