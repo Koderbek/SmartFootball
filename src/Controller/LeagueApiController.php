@@ -61,6 +61,26 @@ class LeagueApiController extends AbstractApiController
     }
 
     /**
+     * @Route("/add/{id}", methods={"POST"})
+     */
+    public function new(int $id, SerializerInterface $serializer, Request $request, EntityManagerInterface $em)
+    {
+        $this->checkToken($request, $this->getParameter('api_key'));
+
+        $league = $this->rapidApiService->getLeagueById($this->getParameter('rapid_api_key'), $id);
+        if (!$league) {
+            throw new HttpException(404, "League not found");
+        }
+
+        $entity = $serializer->deserialize(json_encode($league), League::class,'json');
+        $em->persist($entity);
+        $em->flush();
+
+        $json = $serializer->serialize($entity, "json", ['groups' => ["show"]]);
+        return $this->createResponse($json);
+    }
+
+    /**
      * @Route("/{id}/teams", methods={"GET"}, requirements={"id": "\d+"})
      */
     public function teamsShow(Request $request, SerializerInterface $serializer, League $league)

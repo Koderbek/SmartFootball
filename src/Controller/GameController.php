@@ -93,52 +93,64 @@ class GameController extends AbstractApiController
     {
         $this->checkToken($request, $this->getParameter('api_key'));
 
-        $alerts = [];
         $matches = $em->getRepository(Game::class)->findAll();
-        if ($matches) {
-            $date = $request->query->get('date');
-            $games = $this->rapidApiService->todayGames($this->getParameter('rapid_api_key'), $date);
-            if ($games){
-                foreach ($matches as $match) {
-                    foreach ($games as $game){
-                        if ($match->getId() == $game['fixture_id'] && $game['statusShort'] == 'FT') {
-                            $homeTeam = $game['homeTeam'];
-                            $awayTeam = $game['awayTeam'];
-                            if ($homeTeam && $awayTeam) {
-                                /** @var UserInterests[] $notifyUsers */
-                                $notifyUsers = $em->getRepository(UserInterests::class)
-                                    ->findByTeam([$homeTeam['team_id'], $awayTeam['team_id']]);
+        if (!$matches) {
+            $json = $serializer->serialize([], "json");
+            return $this->createResponse($json);
+        }
 
-                                if ($notifyUsers) {
-                                    $userIds = [];
+        $date = $request->query->get('date');
+        $games = $this->rapidApiService->todayGames($this->getParameter('rapid_api_key'), $date);
+        if (!$games) {
+            $json = $serializer->serialize([], "json");
+            return $this->createResponse($json);
+        }
 
-                                    foreach ($notifyUsers as $notifyUser) {
-                                        $userIds[] = $notifyUser->getUserId();
-                                    }
-
-                                    $message = $this->messageService->getMessage($game);
-
-                                    $userIds = array_unique($userIds);
-                                    sort($userIds);
-
-                                    $alerts[] = [
-                                        'message' => $message,
-                                        'users' => $userIds
-                                    ];
-
-                                    $em->remove($match);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+        $alerts = [];
+        foreach ($matches as $match) {
+            foreach ($games as $game) {
+                if ($match->getId() != $game['fixture_id'] || $game['statusShort'] != 'FT') {
+                    continue;
                 }
 
-                $em->flush();
+                $homeTeam = $game['homeTeam'];
+                $awayTeam = $game['awayTeam'];
+                if (!$homeTeam || !$awayTeam) {
+                    break;
+                }
+
+                /** @var UserInterests[] $notifyUsers */
+                $notifyUsers = $em->getRepository(UserInterests::class)
+                    ->findByTeam([$homeTeam['team_id'], $awayTeam['team_id']]);
+                if (!$notifyUsers) {
+                    $em->remove($match);
+                    break;
+                }
+
+                $userIds = [];
+                foreach ($notifyUsers as $notifyUser) {
+                    $userIds[] = $notifyUser->getUserId();
+                }
+
+                $message = $this->messageService->getMessage($game, $match->getLeague()->getLogo());
+
+                $userIds = array_unique($userIds);
+                sort($userIds);
+
+                $alerts[] = [
+                    'message' => $message,
+                    'users' => $userIds,
+                    'logo' => $match->getLeague()->getLogo() ?? null,
+                ];
+
+                $em->remove($match);
+                break;
             }
         }
 
+        $em->flush();
         $json = $serializer->serialize($alerts, "json");
+
         return $this->createResponse($json);
     }
 }
