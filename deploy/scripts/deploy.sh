@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -e -x
 echo "#stop backend"
 sudo service apache2 stop
 ##########################
@@ -17,6 +17,10 @@ ls ./
 ls -a ./deploy/prod/
 sudo mv ./deploy/prod/env ./
 sudo mv env .env
+
+php bin/console doctrine:database:create
+
+php bin/console doctrine:schema:create --force
 
 echo "#start backend"
 sudo service apache2 start
