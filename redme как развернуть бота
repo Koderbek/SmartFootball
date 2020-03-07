@@ -1,0 +1,27 @@
+redme как развернуть бота
+
+1. установить php
+
+sudo apt-get install software-properties-common python-software-properties
+ c установкой этого дерьма бывают проблемы но гуглится быстро, ссылки ниже - решения
+
+https://andreyex.ru/ubuntu/kak-ustanovit-php-7-2-na-ubuntu-16-04/
+
+https://askubuntu.com/questions/422975/e-package-python-software-properties-has-no-installation-candidate
+
+с пхп нужно установить расширения
+
+2. установка композера 
+
+3.	установить МашаДБ
+Важно: содать нового пользователя и дать ему все права,
+ тк рутом невозможно подключиться удаленно 
+ инструкция:
+
+ https://losst.ru/ustanovka-mariadb-v-ubuntu-18-04
+
+4. проверить .env файл, чтобы подключася к базе
+
+5. composer install 
+
+6. апач, конфиг, есть в репе(будет)
